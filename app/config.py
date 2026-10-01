@@ -5,6 +5,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from .runtime import default_models_dir
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -12,7 +14,7 @@ class Settings(BaseSettings):
     # ---- general ----
     app_env: str = "dev"
     data_dir: Path = Path("./data")            # caches, voicebank, local songs
-    voices_dir: Path = Path("./voices")        # piper .onnx models
+    voices_dir: Path = default_models_dir()    # Piper/voice models; LocalAppData on Windows
     assets_dir: Path = Path("./assets")        # optional samples / soundfont
     public_base_url: str = "http://localhost:8000"
     api_keys: str = ""                         # comma separated; empty = open API (dev only)
