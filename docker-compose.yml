@@ -1,0 +1,45 @@
+# Full stack on ONE free VM (e.g. Oracle Cloud Always Free ARM, 4 OCPU / 24 GB):
+#   docker compose up -d --build
+#   docker compose exec worker python scripts/prewarm.py      # once
+#   docker compose --profile llm up -d                          # optional local LLM fallback
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes: [redis:/data]
+    restart: unless-stopped
+
+  api:
+    build: .
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    ports: ["8000:8000"]
+    volumes: [data:/data]
+    depends_on: [redis]
+    restart: unless-stopped
+
+  worker:
+    build: .
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    command: ["python", "-m", "app.worker"]
+    volumes: [data:/data]
+    depends_on: [redis]
+    restart: unless-stopped
+    deploy:
+      replicas: 2            # ~1 worker per 2 vCPU
+
+  # Optional: local LLM fallback for lyrics when free APIs are rate-limited.
+  # Put a GGUF in ./models (e.g. Qwen2.5-7B-Instruct Q4_K_M, ~4.7 GB, ~3-8 tok/s on 4 ARM cores).
+  llm:
+    profiles: ["llm"]
+    image: ghcr.io/ggml-org/llama.cpp:server
+    command: ["-m", "/models/model.gguf", "--host", "0.0.0.0", "--port", "8080", "-c", "4096", "-t", "4"]
+    volumes: ["./models:/models"]
+    restart: unless-stopped
+
+volumes:
+  data:
+  redis:

@@ -1,0 +1,7 @@
+# Edge neural voices (online, unofficial endpoint - prototype only)
+edge-tts>=6.1
+# Meta MMS-TTS Nepali (CC-BY-NC: non-commercial). Install CPU torch first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+transformers>=4.40
+# dev
+pytest>=8
