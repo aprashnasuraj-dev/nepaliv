@@ -2,7 +2,9 @@
 from PyInstaller.utils.hooks import collect_all, collect_submodules
 from pathlib import Path
 
-root = Path(SPECPATH).parent.parent
+# SPECPATH is the directory containing this .spec file (repo/packaging).
+# Its parent is the repository root.
+root = Path(SPECPATH).parent
 
 datas = [(str(root / 'models' / 'manifest.json'), 'models')]
 binaries = []
