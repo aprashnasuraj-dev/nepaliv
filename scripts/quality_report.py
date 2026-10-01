@@ -24,7 +24,8 @@ from app.config import get_settings
 from app.pipeline.composer import MelodyComposer
 from app.pipeline.line_singer import DurationTTS, SENTINEL, segment
 from app.pipeline.lyrics import BANK
-from app.pipeline.nepali_text import normalize, syllabify_word, tts_text_for_line
+from app.pipeline.nepali_text import normalize, syllabify_word
+from app.pipeline.user_lexicon import tts_text_for_line
 from app.pipeline.orchestrator import performance_order
 from app.pipeline.singer import Singer
 from app.pipeline.styles import get_style
