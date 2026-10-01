@@ -1,144 +1,73 @@
 # 🎵 Nepali Song Generator (CPU-only, no paid APIs)
 
-Prompt → Nepali lyrics (Devanagari) → melody → sung vocals → band → MP3, plus
-syllable-level karaoke timings. Runs on a normal CPU box. Read
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design, decisions,
-CPU budget, roadmap and deployment options.
+Prompt → Nepali lyrics (Devanagari) → melody → sung vocals → band → MP3, plus syllable-level karaoke timings. The same core pipeline serves FastAPI and the Windows PySide6 test studio.
 
-## Project layout
+## Windows desktop release
 
+The Windows x64 release is built from this repository with PyInstaller + Inno Setup **only after** unit tests, two real Piper song renders, objective quality gates and a packaged self-test pass on `windows-latest` / Python 3.11.
+
+The desktop studio provides:
+
+- editable Nepali lyrics with sung-syllable count, romanisation and exact halanta-marked TTS text;
+- Lok Dohori, Adhunik, Pop, Teej, Bhajan and Lori styles;
+- Chitwan/Google Piper voices, key shift, tempo, seed and harmony controls;
+- cancellable in-process rendering with real stage progress;
+- MP3/WAV player with syllable karaoke;
+- vocal/band/harmony stems, `.lrc`, and karaoke JSON export;
+- plain-speech versus sung diagnostics, blinded A/B voice tests, feedback logging and pronunciation lexicon overrides;
+- per-line spectrogram and pitch diagnostics;
+- model download/verification into `%LOCALAPPDATA%\NepaliSongGen\models`;
+- optional free LLM keys stored via Windows Credential Manager/keyring.
+
+Model weights are deliberately not committed or bundled. Chitwan (CC0) is the default. Google Nepali is an optional CC-BY-SA comparison voice. OmniVoice remains an **Experimental adapter** until its complete decoder/tokenizer dependency is available and it passes the CPU RTF, license and native-speaker intelligibility gates.
+
+### Run from source on Windows
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --prefer-binary -r requirements-desktop.txt
+python scripts\fetch_models.py --profile voices
+$env:PYTHONPATH = "$PWD;$PWD\desktop"
+python -m nsg_desktop
 ```
-app/
-  main.py              FastAPI endpoints (songs, lyrics preview, remix, SSE)
-  config.py            all settings from env
-  schemas.py           request/response models
-  kv.py                Redis or in-memory KV (jobs, caches, rate limits)
-  jobqueue.py          RQ queue or in-process thread pool
-  worker.py            RQ SimpleWorker entrypoint (keeps models warm)
-  storage.py           local disk or S3 / Cloudflare R2
-  pipeline/
-    orchestrator.py    the song job: lyrics → compose → sing → band → mix → upload
-    lyrics.py          free LLM chain, validation, variant cache, offline templates
-    nepali_text.py     Devanagari normalisation, syllabification, schwa deletion, rhyme
-    styles.py          lok_dohori, adhunik, pop, teej, bhajan, lori
-    composer.py        rule-based melody + chords + karaoke timings
-    tts.py             Piper (default) / Edge / MMS Nepali TTS engines
-    singer.py          WORLD speech-to-singing + syllable voicebank + harmony
-    backing.py         procedural madal/harmonium/flute/bass (+ optional FluidSynth)
-    mixer.py           pedalboard mix/master, ffmpeg MP3
-scripts/
-  download_voices.py   fetch Piper ne_NP voice
-  prewarm.py           pre-build the syllable voicebank
-tests/test_core.py     syllabifier, validator, composer tests (no model needed)
+
+### Build installer
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
 ```
 
-## Quick start (local, no Docker, no Redis)
-
-Needs Python 3.11+ and `ffmpeg` on PATH.
+## Backend/API quick start
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+# activate the environment for your OS
 pip install -r requirements.txt
-cp .env.example .env            # for local dev: set REDIS_URL= , STORAGE_BACKEND=local,
-                                # DATA_DIR=./data, VOICES_DIR=./voices, PUBLIC_BASE_URL=http://localhost:8000
-python scripts/download_voices.py
-python scripts/prewarm.py       # optional but makes songs fast
+python scripts/fetch_models.py --profile voices
 uvicorn app.main:app --reload
 pytest -q
 ```
 
-With `REDIS_URL` empty, jobs run inside the API process (keep `--workers 1`).
+With `REDIS_URL` empty, jobs run in-process. Native Windows intentionally rejects RQ/Redis worker mode; use the in-process queue for the desktop. Linux deployment may continue to use Redis/RQ.
 
-## Docker (production-ish, one VM)
+## Project layout
 
-```bash
-cp .env.example .env    # fill in keys
-docker compose up -d --build
-docker compose exec worker python scripts/prewarm.py
+```text
+app/                         FastAPI + shared song pipeline
+app/pipeline/                Nepali NLP, composer, TTS, singer, band and mix
+app/pipeline/duration_transfer.py  DTW seam for TTS without native timings
+desktop/nsg_desktop/         PySide6 Windows studio
+models/manifest.json         Drive model inventory (weights excluded from Git)
+scripts/fetch_models.py      resumable model downloader + verification
+scripts/smoke_test.py        two-voice real render test
+scripts/quality_report.py    measurable objective quality gates
+packaging/NepaliSongGen.spec PyInstaller onedir build
+installer/nsg.iss            Inno Setup installer
 ```
 
-## API
+## Quality policy
 
-```bash
-# 1. optional: instant lyrics preview the user can edit
-curl -s localhost:8000/v1/lyrics -H 'content-type: application/json' \
-  -d '{"prompt":"बहिनीको जन्मदिन","dedicate_to":"सीता"}'
+Intelligibility is the primary product gate. Objective metrics prevent technical regressions, but they do **not** prove that Nepali words are understandable. The app therefore includes native-listener feedback tooling. Current targets are ≥80% word accuracy for plain speech and ≥60% for sung output. Those human scores are never filled with synthetic/ASR guesses.
 
-# 2. create a song (returns immediately with an id)
-curl -s localhost:8000/v1/songs -H 'content-type: application/json' -d '{
-  "prompt": "दसैँमा घर फर्किँदाको खुसी",
-  "style": "lok_dohori",
-  "length": "short",
-  "dedicate_to": "आमा",
-  "harmony": true
-}'
-# style: lok_dohori | adhunik | pop | teej | bhajan | lori ; length: short (~1 min) | full (~2 min)
-# -> {"id":"9f2c...","status":"queued",...}
-
-# 3. poll (or stream: GET /v1/songs/{id}/events as Server-Sent Events)
-curl -s localhost:8000/v1/songs/9f2c...
-# -> status, stage, progress, lyrics (early), karaoke (early), audio_url (when done)
-
-# 4. same lyrics, new arrangement
-curl -s localhost:8000/v1/songs/9f2c.../remix -H 'content-type: application/json' -d '{"style":"pop"}'
-
-# sing user-edited lyrics directly
-curl -s localhost:8000/v1/songs -H 'content-type: application/json' -d '{
-  "style":"adhunik",
-  "lyrics":{"title":"माया","sections":[
-    {"type":"verse","lines":["हिमालको हिउँजस्तै सेतो तिम्रो माया","खोलाको पानीझैँ बगिरहन्छ यो मन"]},
-    {"type":"chorus","lines":["माया लाग्छ तिमीलाई, साँचो माया लाग्छ"]}]}}'
-```
-
-Set `API_KEYS` in production and send `X-API-Key`. Other endpoints:
-`GET /v1/styles`, `GET /v1/voices`, `GET /health`.
-
-### Karaoke JSON (for the player)
-
-```json
-{"bpm": 126, "duration": 55.8,
- "sections": [{"name": "verse", "start": 5.71, "end": 28.57}],
- "lines": [{"id": 0, "section": "verse", "text": "दसैँ आयो घरघरमा खुसी छायो",
-            "start": 5.71, "end": 9.9,
-            "syllables": [{"t": "द", "r": "da", "w": 0, "start": 5.714, "end": 6.19}]}]}
-```
-`w` is the word index inside the line, so the app can highlight per word or per syllable.
-
-## Voices
-
-`python scripts/download_voices.py` fetches both from Hugging Face
-(`rhasspy/piper-voices`, folder `ne/ne_NP`):
-
-| Voice id | Who | Licence |
-|---|---|---|
-| `ne_NP-chitwan-medium` (default) | male, 1 speaker, 22 kHz | CC0 |
-| `ne_NP-google-medium`, `-s8`, `-s11` | female, 18 speakers, 22 kHz | CC-BY-SA-4.0 |
-
-Add more google speakers with `VoiceSpec(..., speaker_id=N)` in `app/pipeline/tts.py`.
-
-## Tuning checklist (do this with a Nepali speaker)
-- Wrong syllable splits → add the word to `LEXICON` in `nepali_text.py`.
-- Voice too high/low → `center_midi` in `tts.py` `VOICES`; user-level `key_shift`.
-- Mumbled syllables → raise `length_scale` (slower TTS = longer vowels).
-- Too robotic → lower `vibrato_cents`, raise `reverb_wet` per style.
-
-## Windows 10/11 CPU test setup (Phase 1)
-
-Use **64-bit Python 3.11**. Model weights stay outside Git under
-`%LOCALAPPDATA%\NepaliSongGen\models` unless `VOICES_DIR` is explicitly set.
-PowerShell:
-
-```powershell
-$env:PYTHONUTF8 = "1"
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python scripts\fetch_models.py --group piper
-python -m pytest -q
-python scripts\smoke_test.py --length short
-```
-
-`imageio-ffmpeg` supplies the bundled `ffmpeg.exe`; a system ffmpeg install is
-not required. If `REDIS_URL` is present on Windows, song jobs deliberately use
-the in-process executor instead of RQ.
+See `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/MODEL_REPORT.md`, `docs/QUALITY.md` and `docs/WINDOWS_TEST_GUIDE.md`.

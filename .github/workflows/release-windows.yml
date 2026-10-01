@@ -1,0 +1,118 @@
+name: Windows installer release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-release
+  cancel-in-progress: true
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      PYTHONUTF8: '1'
+      NSG_VERSION: '0.6.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+          cache: pip
+
+      - name: Install desktop build dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          python -m pip install --prefer-binary -r requirements-desktop.txt
+
+      - name: Unit tests
+        run: python -m pytest -q
+
+      - name: Download and verify Piper voices
+        shell: pwsh
+        run: |
+          $models = Join-Path $env:RUNNER_TEMP 'nsg-models'
+          $data = Join-Path $env:RUNNER_TEMP 'nsg-data'
+          python scripts/fetch_models.py --dest "$models" --profile voices
+          "VOICES_DIR=$models" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "DATA_DIR=$data" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Inventory installed models
+        shell: pwsh
+        run: python scripts/inventory_models.py --models "$env:VOICES_DIR" --out docs/MODEL_REPORT.md
+
+      - name: Two-voice end-to-end smoke test
+        shell: pwsh
+        run: |
+          python scripts/smoke_test.py --models "$env:VOICES_DIR" 2>&1 | Tee-Object -FilePath docs\WINDOWS_SMOKE.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Objective quality gates
+        shell: pwsh
+        run: python scripts/quality_report.py --models "$env:VOICES_DIR" --out docs/QUALITY.md --json docs/quality.json
+
+      - name: Build PyInstaller onedir
+        run: python -m PyInstaller --noconfirm --clean packaging/NepaliSongGen.spec
+
+      - name: Packaged self-test
+        shell: pwsh
+        run: |
+          & .\dist\NepaliSongGen\NepaliSongGen.exe --self-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build x64 installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release | Out-Null
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\nsg.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $hash = (Get-FileHash release\NepaliSongGen-Setup-x64.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  NepaliSongGen-Setup-x64.exe" | Out-File release\NepaliSongGen-Setup-x64.sha256 -Encoding ascii
+          Get-Item release\NepaliSongGen-Setup-x64.exe | Format-List Name,Length,LastWriteTime
+          Get-Content release\NepaliSongGen-Setup-x64.sha256
+
+      - name: Upload build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: NepaliSongGen-Windows-x64
+          path: |
+            release/NepaliSongGen-Setup-x64.exe
+            release/NepaliSongGen-Setup-x64.sha256
+            docs/MODEL_REPORT.md
+            docs/QUALITY.md
+            docs/quality.json
+            docs/WINDOWS_SMOKE.log
+          if-no-files-found: error
+
+      - name: Create or update v0.6.0 release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "v0.6.0"
+          $notes = @"
+          Windows CPU-only test release for Nepali text-to-song generation.
+
+          - Chitwan CC0 voice is the default.
+          - Google Nepali voice is included as an optional CC-BY-SA comparison voice.
+          - Model weights are downloaded/verified on first use and are not bundled.
+          - OmniVoice HD remains Experimental because the shared Drive snapshot is missing the decoder/audio-tokenizer weight file claimed by its model card and has not passed the CPU RTF + native-listener gate.
+          - See MODEL_REPORT.md / QUALITY.md in the workflow artifact for measured Windows evidence.
+          "@
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --target $env:GITHUB_SHA --title "Nepali Song Generator v0.6.0 (Windows x64)" --notes $notes
+          }
+          gh release upload $tag release\NepaliSongGen-Setup-x64.exe release\NepaliSongGen-Setup-x64.sha256 --clobber

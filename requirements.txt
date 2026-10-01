@@ -15,11 +15,11 @@ pedalboard>=0.9
 soundfile>=0.12
 mido>=1.3
 # --- Nepali TTS ---
-piper-tts>=1.3
+piper-tts>=1.8,<2
 onnx>=1.15
-# --- storage ---
-boto3>=1.34
 onnxruntime>=1.17
+# --- storage / bundled ffmpeg ---
+boto3>=1.34
 imageio-ffmpeg>=0.5
 # --- verification ---
 pytest>=8.0
