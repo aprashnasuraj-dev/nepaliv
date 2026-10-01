@@ -12,8 +12,10 @@ from app.pipeline.media import embed_cover_mp3, render_cover_video, validate_cov
 from app.runtime import ffmpeg_exe
 
 
+# Valid 1x1 RGBA PNG. Keep the fixture dependency-free so the runtime test does
+# not rely on Pillow being installed by the application.
 PNG_1X1 = base64.b64decode(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZPNoAAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4kOL2HwAGfAKapVobZQAAAABJRU5ErkJggg=="
 )
 
 
