@@ -1,0 +1,232 @@
+{
+  "schema_version": 2,
+  "source_folder": "https://drive.google.com/drive/folders/1P0nBi6zifXrn6HbNvH2vF6cft9GOFYKi",
+  "inventory_date": "2026-10-01",
+  "files": [
+    {
+      "name": "ne_NP-chitwan-medium.onnx",
+      "drive_id": "1SpTAKaoEEBV4brER7Lt1qKg6F_cxezO-",
+      "size": 62950044,
+      "sha256": "f7ba6b0927688f92717e93ca52bc06f5783ce8edc765d5f85365acef1d41822c",
+      "group": "piper",
+      "license": "CC0",
+      "download_name": "ne_NP-chitwan-medium.onnx"
+    },
+    {
+      "name": "ne_NP-chitwan-medium.onnx.json",
+      "drive_id": "1ZaouAN-fcvyBeOPDIx3z5V-lPy8y06Pj",
+      "size": 5043,
+      "sha256": "18d523b03b201422d14e2892cc750a81208d2e45158a9c6a7e4e06a500930dee",
+      "group": "piper",
+      "license": "CC0",
+      "download_name": "ne_NP-chitwan-medium.onnx.json"
+    },
+    {
+      "name": "MODEL_CARD",
+      "drive_id": "12Y6CztnKcldPltf7Tw-b3AEd4VFv8tGq",
+      "size": 276,
+      "sha256": "127e85643329612dbebd7a071dd0f69a03439ceecdec5b637ed8641379b4ba00",
+      "group": "piper",
+      "license": "metadata",
+      "download_name": "MODEL_CARD-chitwan.md"
+    },
+    {
+      "name": "ne_NP-google-medium.onnx",
+      "drive_id": "1D4sG-_RQ8RFgpWwYGXCf96tzLZcShSRG",
+      "size": 76766385,
+      "sha256": "e3ff3cbf97a7c01ebf29263c7fa1899ebed15e27a2d819b93dcfb86e10d39eaa",
+      "group": "piper",
+      "license": "CC-BY-SA-4.0",
+      "download_name": "ne_NP-google-medium.onnx"
+    },
+    {
+      "name": "ne_NP-google-medium.onnx.json",
+      "drive_id": "141NlSqE2iKSiH09Ue7KADxso2CoexAcU",
+      "size": 5165,
+      "sha256": "8c3c364bd2ab369850ae0b5d97b9c7a37ea15fb2eb5b91f8fd10e7ffd85ae4eb",
+      "group": "piper",
+      "license": "CC-BY-SA-4.0",
+      "download_name": "ne_NP-google-medium.onnx.json"
+    },
+    {
+      "name": "MODEL_CARD (1)",
+      "drive_id": "1kYUzK34oSJ5u8EsvBxWOz-xL8vrv3Q4n",
+      "size": 283,
+      "sha256": "8c5adac354771cc5f85cde49062ea8ef4286acc84f360d1008d0758d6c816b5c",
+      "group": "piper",
+      "license": "metadata",
+      "download_name": "MODEL_CARD-google.md"
+    },
+    {
+      "name": "nepali_speech_to_text.py",
+      "drive_id": "12AN6TtOuhwfIjadFOINS8DvaBsoENlSU",
+      "size": 1526,
+      "sha256": "bf882d98b32013bfb9a9aabd5c16ad8a0ed8a3d145f2b06071b3e63253ffe7ff",
+      "group": "metadata",
+      "runtime": false
+    },
+    {
+      "name": "README (1).md",
+      "drive_id": "1FwncQHL8fJ9cPTWKUqszI6IfGHnuzlFt",
+      "size": 2280,
+      "sha256": "ba7241c198ac726180a723312d5829a49ff6abbcce84f96aea786c04b7dd0531",
+      "group": "metadata",
+      "runtime": false
+    },
+    {
+      "name": "gitattributes",
+      "drive_id": "1KFnvaLlhF1_dHc_eQvbryzEww_kj3llB",
+      "size": 2419,
+      "sha256": "a2bdf429c1bc3858213bb4b7a748fa36a71536a5a1ff98861281853c3c2be1f2",
+      "group": "metadata",
+      "runtime": false
+    },
+    {
+      "name": "dataset_infos.json",
+      "drive_id": "1xLJkANsdKG1D6vqmrXDuopnYZcaWhxTH",
+      "size": 1204,
+      "sha256": "43445eac9c17bf5f76d261bb22e34b248be10135327d4dbb76f68d2fdfff3137",
+      "group": "metadata",
+      "runtime": false
+    },
+    {
+      "name": "ALIASES",
+      "drive_id": "1FkhAtLhKDB_scpFcWvCBXFBAygRzlc_C",
+      "size": 17,
+      "sha256": "d874affe46277e092d7e79750ca7686a8e25be3c38516b24d272ebf201386432",
+      "group": "metadata",
+      "runtime": false
+    },
+    {
+      "name": "YTDown.com_YouTube_Media_6d_bRlK_AIQ_Kina-Badhdaichha-Dhukdhuki_009_128k.mp3",
+      "drive_id": "1sTOYg-5SySbpnTjBIh6dgidiz6RMZsX-",
+      "size": 8392106,
+      "sha256": "c833ed4719585a5147c3db614b45885a6fbbfc040bb821fe2a4211f72d24f0c0",
+      "group": "reference_audio",
+      "runtime": false,
+      "consent_status": "unknown; do not use for voice cloning"
+    },
+    {
+      "name": "YTDown.com_YouTube_Media_LFR4eMQzUr4_Kehi-Mitho-Baat-Gara-Narayan-Gopal-Lyrical-Video-Superhit-Nepali-Song-Music-Nepa_009_128k.mp3",
+      "drive_id": "10LVauL_SKKQ17Q1zI2zGxwCL98DhavFc",
+      "size": 5057612,
+      "sha256": "e8aeb3af4072f5bb10ea86a3be2a2a819ae6d31f5c446fb28f33ad9bcf1e1b99",
+      "group": "reference_audio",
+      "runtime": false,
+      "consent_status": "unknown; do not use for voice cloning"
+    },
+    {
+      "name": "preprocessor_config.json",
+      "drive_id": "142WeJ_920xeOPBEQro15evp-fPPjYNcO",
+      "size": 206,
+      "sha256": "ae61eea88558608ee2fa86d2aec9fce8d99a5ff75d09cb7651ccce21ae1d9084",
+      "group": "omnivoice_audio_tokenizer_support",
+      "runtime": false
+    },
+    {
+      "name": "config (1).json",
+      "drive_id": "1cjz8Z0RF8bV9GK7euvpoLGGF7m6yvpuw",
+      "size": 2531,
+      "sha256": "eefb20806f7104e77c9a5277c9df0f9bb8826b08eb1d4e8ab2b9829b6ef9fac1",
+      "group": "omnivoice_audio_tokenizer_support",
+      "runtime": false
+    },
+    {
+      "name": "README (3).md",
+      "drive_id": "19UuHZj3B___-rv_9ZfR2FFJ3cWPQPzon",
+      "size": 5174,
+      "sha256": "0336368f8274a5ed09f54cee8d56a851ecee96026d9f391a6735762c16608a60",
+      "group": "omnivoice_audio_tokenizer_support",
+      "runtime": false
+    },
+    {
+      "name": "LICENSE",
+      "drive_id": "1DLZW8RMxRK492Tze5JQptucfHRkd6ZG8",
+      "size": 9171,
+      "sha256": "ac933dc084d119bd20401956b90d11ae87c248b2da62622cd580d82cdf2fa049",
+      "group": "omnivoice_audio_tokenizer_support",
+      "runtime": false
+    },
+    {
+      "name": "gitattributes (2)",
+      "drive_id": "10oUabrtiV4xtVYU9azIEswbyVTKScewE",
+      "size": 1519,
+      "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+      "group": "omnivoice_audio_tokenizer_support",
+      "runtime": false
+    },
+    {
+      "name": "model.safetensors",
+      "drive_id": "1bcncZ4BSpRLpn_MFSzUi9lGsiNBe_e3N",
+      "size": 2030864036,
+      "sha256": null,
+      "group": "omnivoice",
+      "runtime": false,
+      "sha256_status": "pending: Drive connector refuses raw downloads >256 MiB; must hash on target machine in Phase 2",
+      "license_status": "unresolved: fine-tune README says Apache-2.0; supplied audio-tokenizer LICENSE is Boson Higgs Audio 2 Community License"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "drive_id": "1rOkv8lusK6UTIXYItYw8eFyuld6jAEB-",
+      "size": 563,
+      "sha256": "e5f3cd82a29f35ee89138e49d935d2c58ffb4598b4b563541f43f857955abd6c",
+      "group": "omnivoice",
+      "runtime": false
+    },
+    {
+      "name": "tokenizer.json",
+      "drive_id": "1HNIQQsyOXxfM5onGrPAG1zbBzxepCgqm",
+      "size": 11423986,
+      "sha256": "408f669b7e2b045fdf54201d815bd364e6667dbd845115da81239c40bc6dcfd1",
+      "group": "omnivoice",
+      "runtime": false
+    },
+    {
+      "name": "config.json",
+      "drive_id": "1tMDN_Y_2KoLzxrrP7tsfC11XgJFBCFjo",
+      "size": 2241,
+      "sha256": "6c67654b137934c09b0b467d1d2a5a42aa3f6ed02a9ec84c19b9285fff36d58f",
+      "group": "omnivoice",
+      "runtime": false
+    },
+    {
+      "name": "chat_template.jinja",
+      "drive_id": "1BLl02WdR4qd0X2UZuBluVGfH8FaHwDvq",
+      "size": 4168,
+      "sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8",
+      "group": "omnivoice",
+      "runtime": false
+    },
+    {
+      "name": "README (2).md",
+      "drive_id": "1-Orq_wd23oENxa-LDyDTN5A1XClgqUUO",
+      "size": 4286,
+      "sha256": "e0fd7680e09cb6a66b3cc2a0a3cd8e86fb033f0ac3ec097b6101180041a29979",
+      "group": "omnivoice",
+      "runtime": false
+    },
+    {
+      "name": "gitattributes (1)",
+      "drive_id": "167NS2A0XAkjh0hxSoTy0m_7SOfm2ysQr",
+      "size": 1570,
+      "sha256": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+      "group": "omnivoice",
+      "runtime": false
+    }
+  ],
+  "inventory_notes": [
+    "All 25 direct files found in the shared root and OmniVoice subfolder are listed.",
+    "Only the six Piper files are enabled for Phase-1 downloads.",
+    "The 2.03 GB OmniVoice checkpoint SHA-256 cannot be computed in this environment because the connected Drive raw-download action has a 256 MiB limit; Phase 2 must hash it on the target machine before use.",
+    "The OmniVoice README says the runtime also needs an ~805 MB audio_tokenizer model.safetensors, but that weight file is not present in the shared Drive folder; only its config/preprocessor/support files are present.",
+    "The two MP3 files are inventoried only. They are not approved reference voices and must not be used for cloning without rights/consent."
+  ],
+  "expected_missing_assets": [
+    {
+      "name": "audio_tokenizer/model.safetensors",
+      "expected_size_approx": 805665628,
+      "source": "k2-fsa/OmniVoice upstream",
+      "reason": "required by OmniVoice runtime according to the supplied model README, but absent from the shared Drive folder"
+    }
+  ]
+}
