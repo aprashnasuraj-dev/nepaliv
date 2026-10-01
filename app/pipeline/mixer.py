@@ -10,6 +10,8 @@ import numpy as np
 import soundfile as sf
 from pedalboard import Compressor, Delay, Gain, HighpassFilter, HighShelfFilter, Limiter, Pedalboard, PeakFilter, Reverb
 
+from ..runtime import ffmpeg_exe
+
 SR = 44100
 
 
@@ -76,7 +78,7 @@ def export(audio: np.ndarray, out_dir: Path, name: str, title: str, bitrate: str
     wav = out_dir / f"{name}.wav"
     mp3 = out_dir / f"{name}.mp3"
     sf.write(wav, audio, SR, subtype="PCM_16")
-    subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(wav), "-codec:a", "libmp3lame", "-b:a", bitrate,
+    subprocess.run([ffmpeg_exe(), "-y", "-v", "error", "-i", str(wav), "-codec:a", "libmp3lame", "-b:a", bitrate,
                     "-metadata", f"title={title}", "-metadata", "artist=AI गायक", str(mp3)],
                    check=True)
     return {"wav": wav, "mp3": mp3}

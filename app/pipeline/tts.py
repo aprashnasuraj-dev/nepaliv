@@ -26,6 +26,7 @@ from pathlib import Path
 import numpy as np
 
 from ..config import get_settings
+from ..runtime import ffmpeg_exe
 
 
 @dataclass(frozen=True)
@@ -57,7 +58,7 @@ def decode_audio_file(path: str | Path) -> tuple[np.ndarray, int]:
     """Decode anything ffmpeg understands to mono float32 @ 22050 Hz."""
     sr = 22050
     raw = subprocess.run(
-        ["ffmpeg", "-v", "error", "-i", str(path), "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"],
+        [ffmpeg_exe(), "-v", "error", "-i", str(path), "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"],
         check=True, capture_output=True).stdout
     return np.frombuffer(raw, dtype=np.float32).copy(), sr
 
@@ -114,9 +115,19 @@ class EdgeEngine(TTSEngine):
         async def _run(path: str):
             await edge_tts.Communicate(text, self.spec.model, rate="-25%").save(path)
 
-        with tempfile.NamedTemporaryFile(suffix=".mp3") as tmp:
-            asyncio.run(_run(tmp.name))
-            return decode_audio_file(tmp.name)
+        # Windows locks NamedTemporaryFile while it is open. Close the file
+        # descriptor before edge-tts/ffmpeg reopen it, then clean up explicitly.
+        fd, tmp_name = tempfile.mkstemp(suffix=".mp3")
+        import os
+        os.close(fd)
+        try:
+            asyncio.run(_run(tmp_name))
+            return decode_audio_file(tmp_name)
+        finally:
+            try:
+                os.unlink(tmp_name)
+            except FileNotFoundError:
+                pass
 
 
 class MMSEngine(TTSEngine):
