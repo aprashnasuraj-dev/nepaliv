@@ -1,0 +1,5 @@
+# Optional OmniVoice experimental pack. Not installed in the base desktop build.
+# Install only after the complete decoder/tokenizer weights are available.
+torch>=2.5
+transformers>=5.3
+omnivoice
