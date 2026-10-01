@@ -4,7 +4,7 @@ Prompt → Nepali lyrics (Devanagari) → melody → sung vocals → band → MP
 
 ## Windows desktop release
 
-The Windows x64 release is built from this repository with PyInstaller + Inno Setup **only after** unit tests, two real Piper song renders, objective quality gates and a packaged self-test pass on `windows-latest` / Python 3.11.
+**Current desktop test line: v0.6.0.** The Windows x64 release is built from this repository with PyInstaller + Inno Setup **only after** unit tests, two real Piper song renders, objective quality gates and a packaged self-test pass on `windows-latest` / Python 3.11.
 
 The desktop studio provides:
 
