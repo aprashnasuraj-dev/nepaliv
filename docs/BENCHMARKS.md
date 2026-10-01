@@ -1,14 +1,15 @@
 # Benchmarks
 
-Phase 1 records end-to-end CPU timings using `python scripts/smoke_test.py`.
-Do not copy historical numbers here as if they were measured on the current machine.
+## Previously supplied baseline evidence
 
-## Required Windows baseline
+The project brief reports the following earlier measurements from a 2-vCPU Linux sandbox for the v2 line singer: ~0.5 s TTS+WORLD analysis per line, 9–13 s end-to-end for a ~1-minute song, 99–100% of measured notes within 50 cents (median ~3 cents), and ~0.4% silence inside sung lines. These are **historical supplied measurements**, not fresh Windows measurements.
 
-Run on Windows 10/11 x64 with Python 3.11 after `scripts/fetch_models.py`.
-Record CPU model, physical/logical cores, RAM, Python version, and per-stage output.
+## Windows release evidence
 
-| Date | OS / CPU | RAM | Voice | Song duration | Render time | Notes |
-|---|---|---:|---|---:|---:|---|
-| pending | Windows 10/11 | pending | Chitwan | pending | pending | Phase-1 acceptance measurement |
-| pending | Windows 10/11 | pending | Google | pending | pending | Phase-1 acceptance measurement |
+The release workflow runs on `windows-latest`, Python 3.11 x64 and records:
+
+1. `scripts/smoke_test.py` — a short offline song with Chitwan and Google Piper voices.
+2. `scripts/quality_report.py` — segmentation success, pitch accuracy, silence ratio, TTS RTF, vocal render RTF and note-energy spread.
+3. Packaged `NepaliSongGen.exe --self-test`.
+
+The workflow uploads `WINDOWS_SMOKE.log`, `QUALITY.md`, `quality.json` and `MODEL_REPORT.md` next to the installer artifact. This repository file intentionally does not fabricate numbers before that Windows run completes.
