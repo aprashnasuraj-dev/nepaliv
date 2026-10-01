@@ -3,9 +3,9 @@ locally, on a free VM, or on a Hugging Face Space without code changes."""
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from .runtime import default_data_dir, default_models_dir
 
-from .runtime import default_models_dir
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -13,30 +13,30 @@ class Settings(BaseSettings):
 
     # ---- general ----
     app_env: str = "dev"
-    data_dir: Path = Path("./data")            # caches, voicebank, local songs
-    voices_dir: Path = default_models_dir()    # Piper/voice models; LocalAppData on Windows
-    assets_dir: Path = Path("./assets")        # optional samples / soundfont
+    data_dir: Path = default_data_dir()
+    voices_dir: Path = default_models_dir()
+    assets_dir: Path = Path("./assets")
     public_base_url: str = "http://localhost:8000"
-    api_keys: str = ""                         # comma separated; empty = open API (dev only)
+    api_keys: str = ""
     cors_origins: str = "*"
 
     # ---- queue ----
-    redis_url: str = ""                        # empty => in-process thread queue (single box)
-    inline_workers: int = 1                    # threads when redis_url is empty
+    redis_url: str = ""
+    inline_workers: int = 1
     job_timeout_s: int = 600
-    rate_limit_per_hour: int = 10              # songs per api key / IP
+    rate_limit_per_hour: int = 10
 
     # ---- storage ----
-    storage_backend: str = "local"             # local | s3  (s3 also covers Cloudflare R2)
+    storage_backend: str = "local"
     s3_bucket: str = ""
-    s3_endpoint_url: str = ""                  # R2: https://<account>.r2.cloudflarestorage.com
+    s3_endpoint_url: str = ""
     s3_access_key_id: str = ""
     s3_secret_access_key: str = ""
     s3_region: str = "auto"
-    s3_public_base_url: str = ""               # e.g. https://songs.yourdomain.com (R2 custom domain)
+    s3_public_base_url: str = ""
     signed_url_ttl_s: int = 7 * 24 * 3600
 
-    # ---- lyrics LLM chain (OpenAI-compatible endpoints, tried in order) ----
+    # ---- lyrics LLM chain ----
     llm_providers: str = "gemini,groq,openrouter,local"
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
@@ -47,19 +47,22 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     openrouter_model: str = "meta-llama/llama-3.3-70b-instruct:free"
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    local_llm_base_url: str = ""               # llama.cpp server, e.g. http://llm:8080/v1
+    local_llm_base_url: str = ""
     local_llm_model: str = "qwen2.5-7b-instruct"
     llm_timeout_s: int = 60
 
     # ---- voice ----
-    tts_engine: str = "piper"                  # piper | edge | mms
+    tts_engine: str = "piper"
     default_voice: str = "ne_NP-chitwan-medium"
     tts_threads: int = 2
+    omnivoice_ref_audio: str = ""
+    omnivoice_ref_text: str = ""
+    omnivoice_steps: int = 16
 
     # ---- audio ----
     sample_rate: int = 44100
     mp3_bitrate: str = "160k"
-    soundfont_path: str = ""                   # optional .sf2 -> FluidSynth backing (better instruments)
+    soundfont_path: str = ""
 
     @property
     def api_key_set(self) -> set[str]:

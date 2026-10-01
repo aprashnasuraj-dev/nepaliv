@@ -1,18 +1,4 @@
-# Local configuration / secrets
-.env
-.env.*
-!.env.example
-
-# Python
-.venv/
-venv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# Models and generated data (never commit weights/audio)
+# models / datasets / generated media
 models/*
 !models/manifest.json
 voices/
@@ -25,18 +11,20 @@ data/
 *.ckpt
 *.mp3
 *.wav
+*.flac
+!tests/fixtures/*.wav
 
-# Build / packaging
-build/
+# local secrets / builds
+.env
+.venv/
+venv/
 dist/
-*.spec
-
-# IDE / OS
-.vscode/
+build/
+*.spec.bak
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+*.log
 .idea/
-.DS_Store
-Thumbs.db
-
-# Tiny deterministic test fixtures are allowed
-!tests/fixtures/
-!tests/fixtures/**
+.vscode/

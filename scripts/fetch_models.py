@@ -1,114 +1,119 @@
-#!/usr/bin/env python3
-"""Download model assets from the shared Google Drive manifest.
+"""Download/verify model files from the user's shared Google Drive folder.
 
-Supports resume, progress, size validation and SHA-256 verification. Re-running
-is idempotent: verified files are skipped and partial downloads continue.
+No model weights are committed to Git. On Windows the default destination is
+%LOCALAPPDATA%\\NepaliSongGen\\models. Downloads support resume through HTTP Range.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import os
 import sys
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
-
-import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from app.runtime import default_models_dir  # noqa: E402
+from app.runtime import default_models_dir
 
 MANIFEST = ROOT / "models" / "manifest.json"
 URL = "https://drive.usercontent.google.com/download?id={id}&export=download&confirm=t"
-CHUNK = 1024 * 1024
 
 
-def sha256_file(path: Path) -> str:
+def sha256(path: Path, block: int = 4 * 1024 * 1024) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
-        for block in iter(lambda: f.read(CHUNK), b""):
-            h.update(block)
+        for chunk in iter(lambda: f.read(block), b""):
+            h.update(chunk)
     return h.hexdigest()
 
 
-def verify(path: Path, item: dict) -> tuple[bool, str]:
-    if not path.exists():
-        return False, "missing"
-    expected_size = int(item["size"])
-    if path.stat().st_size != expected_size:
-        return False, f"size {path.stat().st_size:,} != {expected_size:,}"
-    digest = sha256_file(path)
-    if digest.lower() != item["sha256"].lower():
-        return False, f"sha256 {digest} != {item['sha256']}"
-    return True, digest
+def load_manifest() -> dict:
+    return json.loads(MANIFEST.read_text(encoding="utf-8"))
 
 
-def download(client: httpx.Client, item: dict, dest: Path) -> None:
+def groups_for(profile: str) -> set[str]:
+    if profile == "minimal": return {"piper"}
+    if profile == "voices": return {"piper", "metadata"}
+    if profile == "omnivoice": return {"omnivoice"}
+    if profile == "all": return {"piper", "metadata", "omnivoice", "asr-metadata", "reference-audio"}
+    raise ValueError(profile)
+
+
+def _progress(name: str, done: int, total: int, started: float) -> None:
+    pct = (done / total * 100) if total else 0
+    rate = done / max(0.1, time.time() - started) / (1024 * 1024)
+    print(f"\r{name}: {done/1048576:.1f}/{total/1048576:.1f} MiB {pct:5.1f}% {rate:.1f} MiB/s", end="", flush=True)
+
+
+def download(file: dict, dest_root: Path, verify: bool = True) -> Path:
+    dest = dest_root / file["name"]
     dest.parent.mkdir(parents=True, exist_ok=True)
+    expected_size = int(file.get("size") or 0)
+    expected_hash = file.get("sha256")
+    if dest.exists() and (not expected_size or dest.stat().st_size == expected_size):
+        if not verify or not expected_hash or sha256(dest).lower() == expected_hash.lower():
+            print(f"OK  {file['name']}")
+            return dest
+        dest.unlink()
     part = dest.with_suffix(dest.suffix + ".part")
-    existing = part.stat().st_size if part.exists() else 0
-    headers = {"Range": f"bytes={existing}-"} if existing else {}
-    mode = "ab" if existing else "wb"
-    started = time.perf_counter()
-
-    with client.stream("GET", URL.format(id=item["drive_id"]), headers=headers) as r:
-        r.raise_for_status()
-        # Some hosts ignore Range; restarting prevents duplicated bytes.
-        if existing and r.status_code != 206:
-            existing = 0
-            mode = "wb"
-        total = int(item["size"])
-        done = existing
-        with part.open(mode) as f:
-            for chunk in r.iter_bytes(CHUNK):
-                if not chunk:
-                    continue
-                f.write(chunk)
-                done += len(chunk)
-                elapsed = max(0.001, time.perf_counter() - started)
-                speed = max(0.0, (done - existing) / elapsed / (1024 * 1024))
-                pct = min(100.0, 100.0 * done / total)
-                print(f"\r  {pct:6.2f}%  {done/1048576:8.1f}/{total/1048576:8.1f} MiB  {speed:5.1f} MiB/s", end="", flush=True)
+    resume = part.stat().st_size if part.exists() else 0
+    headers = {"User-Agent": "NepaliSongGen/0.6"}
+    if resume: headers["Range"] = f"bytes={resume}-"
+    req = urllib.request.Request(URL.format(id=file["id"]), headers=headers)
+    try:
+        resp = urllib.request.urlopen(req, timeout=60)
+    except urllib.error.HTTPError as e:
+        if e.code == 416 and part.exists():
+            part.replace(dest); return dest
+        raise
+    mode = "ab" if resume and getattr(resp, "status", 200) == 206 else "wb"
+    if mode == "wb": resume = 0
+    started = time.time(); done = resume
+    with resp, part.open(mode) as out:
+        while True:
+            chunk = resp.read(1024 * 1024)
+            if not chunk: break
+            out.write(chunk); done += len(chunk)
+            if expected_size: _progress(file["name"], done, expected_size, started)
     print()
-    os.replace(part, dest)
+    if expected_size and part.stat().st_size != expected_size:
+        raise RuntimeError(f"size mismatch for {file['name']}: {part.stat().st_size} != {expected_size}")
+    part.replace(dest)
+    digest = sha256(dest)
+    if expected_hash and digest.lower() != expected_hash.lower():
+        dest.unlink(missing_ok=True)
+        raise RuntimeError(f"SHA-256 mismatch for {file['name']}: {digest} != {expected_hash}")
+    if not expected_hash:
+        dest.with_suffix(dest.suffix + ".sha256").write_text(digest + "\n", encoding="ascii")
+        print(f"SHA {file['name']}: {digest} (recorded locally; manifest had no upstream hash)")
+    return dest
+
+
+def selected_files(manifest: dict, profile: str) -> list[dict]:
+    groups = groups_for(profile)
+    files = [f for f in manifest["files"] if f.get("group") in groups]
+    if profile == "all": files = [f for f in files if f.get("group") != "reference-audio"]
+    return files
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--models-dir", type=Path, default=default_models_dir())
-    ap.add_argument("--group", default="piper", help="manifest group to download, or 'all'")
-    ap.add_argument("--verify-only", action="store_true")
-    args = ap.parse_args()
+    ap.add_argument("--dest", type=Path, default=default_models_dir())
+    ap.add_argument("--profile", choices=["minimal", "voices", "omnivoice", "all"], default="voices")
+    ap.add_argument("--no-verify", action="store_true")
+    args = ap.parse_args(); m = load_manifest(); args.dest.mkdir(parents=True, exist_ok=True)
+    print(f"Models: {args.dest}")
+    failures = []
+    for f in selected_files(m, args.profile):
+        try: download(f, args.dest, verify=not args.no_verify)
+        except Exception as e:
+            failures.append((f["name"], str(e))); print(f"FAILED {f['name']}: {e}", file=sys.stderr)
+    if failures:
+        for name, err in failures: print(f"- {name}: {err}")
+        return 2
+    return 0
 
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    items = [x for x in manifest["files"] if args.group == "all" or x.get("group") == args.group]
-    if not items:
-        raise SystemExit(f"No manifest files found for group {args.group!r}")
-
-    failures = 0
-    with httpx.Client(follow_redirects=True, timeout=httpx.Timeout(60.0, read=300.0)) as client:
-        for item in items:
-            dest = args.models_dir / item.get("download_name", item["name"])
-            ok, detail = verify(dest, item)
-            if ok:
-                print(f"OK   {item['name']}  {detail[:12]}…")
-                continue
-            if args.verify_only:
-                print(f"FAIL {item['name']}: {detail}")
-                failures += 1
-                continue
-            print(f"GET  {item['name']} ({int(item['size'])/1048576:.1f} MiB) [{detail}]")
-            download(client, item, dest)
-            ok, detail = verify(dest, item)
-            if not ok:
-                print(f"FAIL {item['name']}: {detail}")
-                failures += 1
-            else:
-                print(f"OK   {item['name']}  {detail[:12]}…")
-    return 1 if failures else 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())

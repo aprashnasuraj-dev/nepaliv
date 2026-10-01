@@ -4,21 +4,22 @@ uvicorn[standard]>=0.29
 pydantic>=2.6
 pydantic-settings>=2.2
 httpx>=0.27
-pytest>=8.0
 # --- queue / cache ---
 redis>=5.0
 rq>=1.16
-# --- audio / DSP (all CPU, all wheels or tiny C builds) ---
+# --- audio / DSP ---
 numpy>=1.26
 scipy>=1.12
-pyworld==0.3.5          # 0.3.6 lacks CPython 3.11 Windows wheel; 0.3.5 has win_amd64
-pedalboard>=0.9         # Spotify's C++ effects: reverb, compressor, limiter
+pyworld>=0.3.5
+pedalboard>=0.9
 soundfile>=0.12
-imageio-ffmpeg>=0.5   # bundled cross-platform ffmpeg executable
-mido>=1.3               # MIDI for the optional FluidSynth path
+mido>=1.3
 # --- Nepali TTS ---
-piper-tts==1.8.0        # verified API + CPython 3.11 Windows abi3 wheel
-onnx>=1.15              # to expose the VITS duration tensor (line-level singing)
-onnxruntime>=1.20       # explicit runtime dependency; CPython 3.11 Windows wheel available
+piper-tts>=1.3
+onnx>=1.15
 # --- storage ---
-boto3>=1.34             # S3 / Cloudflare R2
+boto3>=1.34
+onnxruntime>=1.17
+imageio-ffmpeg>=0.5
+# --- verification ---
+pytest>=8.0
