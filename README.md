@@ -121,3 +121,24 @@ Add more google speakers with `VoiceSpec(..., speaker_id=N)` in `app/pipeline/tt
 - Voice too high/low → `center_midi` in `tts.py` `VOICES`; user-level `key_shift`.
 - Mumbled syllables → raise `length_scale` (slower TTS = longer vowels).
 - Too robotic → lower `vibrato_cents`, raise `reverb_wet` per style.
+
+## Windows 10/11 CPU test setup (Phase 1)
+
+Use **64-bit Python 3.11**. Model weights stay outside Git under
+`%LOCALAPPDATA%\NepaliSongGen\models` unless `VOICES_DIR` is explicitly set.
+PowerShell:
+
+```powershell
+$env:PYTHONUTF8 = "1"
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python scripts\fetch_models.py --group piper
+python -m pytest -q
+python scripts\smoke_test.py --length short
+```
+
+`imageio-ffmpeg` supplies the bundled `ffmpeg.exe`; a system ffmpeg install is
+not required. If `REDIS_URL` is present on Windows, song jobs deliberately use
+the in-process executor instead of RQ.
