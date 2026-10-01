@@ -12,10 +12,10 @@ from dataclasses import dataclass, field
 
 MAJOR = (0, 2, 4, 5, 7, 9, 11)
 MINOR = (0, 2, 3, 5, 7, 8, 10)
-KAFI = (0, 2, 3, 5, 7, 9, 10)          # raag Kafi ~ dorian, beloved in lok geet
-YAMAN = (0, 2, 4, 6, 7, 9, 11)         # raag Yaman ~ lydian, adhunik/ghazal colour
-BHUPALI = (0, 2, 4, 7, 9)              # raag Bhupali ~ major pentatonic, Teej / folk
-MALKAUNS = (0, 3, 5, 8, 10)            # minor pentatonic
+KAFI = (0, 2, 3, 5, 7, 9, 10)
+YAMAN = (0, 2, 4, 6, 7, 9, 11)
+BHUPALI = (0, 2, 4, 7, 9)
+MALKAUNS = (0, 3, 5, 8, 10)
 
 
 @dataclass(frozen=True)
@@ -24,21 +24,19 @@ class Style:
     label: str
     label_ne: str
     bpm: int
-    steps_per_bar: int                  # 16 = 4/4, 12 = 6/8 (dadra / jhyaure feel)
+    steps_per_bar: int
     melody_scale: tuple[int, ...]
     harmony_scale: tuple[int, ...]
-    verse_prog: tuple[int, ...]         # chord roots as harmony-scale degree indices
+    verse_prog: tuple[int, ...]
     chorus_prog: tuple[int, ...]
     percussion: tuple[tuple[int, str, float], ...]
-    instruments: tuple[str, ...]        # subset of: harmonium, pluck, pad, bass, flute, madal, kit, jhyali, sitar
+    instruments: tuple[str, ...]
     vibrato_cents: float = 35.0
-    dotted_prob: float = 0.15           # chance to turn 2+2 into 3+1 (lilt)
+    dotted_prob: float = 0.15
     reverb_wet: float = 0.22
     strong_steps: tuple[int, ...] = field(default=(0, 4, 8, 12))
 
 
-# ---- percussion grooves ------------------------------------------------------
-# madal syllables: dha (open bass+treble), ghe (bass), ta/na (treble ring), tin (muted)
 MADAL_DADRA = ((0, "dha", 1.0), (3, "na", .55), (4, "ta", .7), (6, "ghe", .85), (8, "na", .6), (10, "ta", .7))
 MADAL_DADRA_FAST = MADAL_DADRA + ((2, "tin", .4), (7, "tin", .35), (11, "tin", .4))
 MADAL_KAHARWA = ((0, "dha", 1.0), (4, "ghe", .7), (6, "na", .55), (8, "dha", .85), (10, "ta", .6), (12, "ghe", .75), (14, "na", .55))
@@ -50,7 +48,9 @@ STYLES: dict[str, Style] = {s.id: s for s in [
     Style("lok_dohori", "Lok / Dohori", "लोक दोहोरी", 126, 12, KAFI, KAFI,
           (0, 0, 6, 0), (0, 6, 4, 0), MADAL_DADRA, ("harmonium", "bass", "madal", "flute"),
           vibrato_cents=40, dotted_prob=0.25, strong_steps=(0, 6)),
-    Style("adhunik", "Adhunik (modern)", "आधुनिक गीत", 78, 16, MAJOR, MAJOR,
+    # Reference-song analysis supplied for this project clustered around ~92-96 BPM;
+    # 94 BPM is therefore a more useful default than the earlier 78 BPM demo tempo.
+    Style("adhunik", "Adhunik (modern)", "आधुनिक गीत", 94, 16, MAJOR, MAJOR,
           (0, 5, 3, 4), (3, 4, 0, 5), MADAL_KAHARWA, ("pluck", "pad", "bass", "madal", "flute"),
           vibrato_cents=30, dotted_prob=0.2, reverb_wet=0.28),
     Style("pop", "Nepali Pop", "नेपाली पप", 100, 16, MINOR, MINOR,

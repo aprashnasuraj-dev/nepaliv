@@ -1,5 +1,5 @@
 #define MyAppName "Nepali AI Song Generator"
-#define MyAppVersion "0.6.0"
+#define MyAppVersion "0.7.0"
 #define MyAppPublisher "NepaliSongGen"
 #define MyAppExeName "NepaliSongGen.exe"
 

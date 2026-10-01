@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 90
     env:
       PYTHONUTF8: '1'
-      NSG_VERSION: '0.6.0'
+      NSG_VERSION: '0.7.0'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip wheel setuptools
           python -m pip install --prefer-binary -r requirements-desktop.txt
 
-      - name: Unit tests
+      - name: Unit tests including cover/video export
         run: python -m pytest -q
 
       - name: Download and verify Piper voices
@@ -86,7 +86,7 @@ jobs:
       - name: Upload build evidence
         uses: actions/upload-artifact@v4
         with:
-          name: NepaliSongGen-Windows-x64
+          name: NepaliSongGen-Windows-x64-v0.7.0
           path: |
             release/NepaliSongGen-Setup-x64.exe
             release/NepaliSongGen-Setup-x64.sha256
@@ -96,23 +96,25 @@ jobs:
             docs/WINDOWS_SMOKE.log
           if-no-files-found: error
 
-      - name: Create or update v0.6.0 release
+      - name: Create or update v0.7.0 release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "v0.6.0"
+          $tag = "v0.7.0"
           $notes = @"
-          Windows CPU-only test release for Nepali text-to-song generation.
+          Windows x64 release for Nepali text-to-song generation.
 
-          - Chitwan CC0 voice is the default.
-          - Google Nepali voice is included as an optional CC-BY-SA comparison voice.
+          - Generates pitched Nepali sung vocals, band arrangement, MP3/WAV and karaoke data.
+          - Adds cover-photo selection, embedded MP3 cover art and MP4 video output.
+          - Full-song mode now closes with a repeated final chorus.
+          - Adhunik default tempo is retuned from the supplied reference-song tempo range; reference recordings are not used for cloning or redistributed.
+          - Chitwan CC0 voice is the default; Google Nepali remains an optional CC-BY-SA comparison voice.
           - Model weights are downloaded/verified on first use and are not bundled.
-          - OmniVoice HD remains Experimental because the shared Drive snapshot is missing the decoder/audio-tokenizer weight file claimed by its model card and has not passed the CPU RTF + native-listener gate.
-          - See MODEL_REPORT.md / QUALITY.md in the workflow artifact for measured Windows evidence.
+          - OmniVoice HD remains Experimental because the shared Drive snapshot lacks the complete audio-tokenizer runtime dependency and has not passed the CPU/native-listener gates.
           "@
           gh release view $tag *> $null
           if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --target $env:GITHUB_SHA --title "Nepali Song Generator v0.6.0 (Windows x64)" --notes $notes
+            gh release create $tag --target $env:GITHUB_SHA --title "Nepali Song Generator v0.7.0 (Windows x64)" --notes $notes
           }
           gh release upload $tag release\NepaliSongGen-Setup-x64.exe release\NepaliSongGen-Setup-x64.sha256 --clobber

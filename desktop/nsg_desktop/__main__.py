@@ -4,7 +4,9 @@ import os,sys
 def _self_test()->int:
     from app.runtime import ffmpeg_exe,local_app_data
     from app.pipeline.nepali_text import romanize,syllabify_line
-    sample="हिमालको हिउँजस्तै सेतो तिम्रो माया"; assert syllabify_line(sample); print("NepaliSongGen desktop self-test OK"); print("data:",local_app_data()); print("ffmpeg:",ffmpeg_exe()); print("roman:",romanize(sample)); return 0
+    from app.pipeline.media import render_cover_video, validate_cover
+    sample="हिमालको हिउँजस्तै सेतो तिम्रो माया"; assert syllabify_line(sample); assert validate_cover(None) is None
+    print("NepaliSongGen desktop self-test OK"); print("data:",local_app_data()); print("ffmpeg:",ffmpeg_exe()); print("roman:",romanize(sample)); print("media: cover + mp4 pipeline loaded"); return 0
 
 def _apply_saved_settings():
     from PySide6.QtCore import QSettings
@@ -25,6 +27,6 @@ def main()->int:
     from PySide6.QtWidgets import QApplication
     from app.runtime import setup_logging
     setup_logging()
-    from .app import MainWindow
-    app=QApplication(sys.argv); app.setApplicationName("Nepali Song Generator"); app.setOrganizationName("NepaliSongGen"); w=MainWindow(); w.show(); return app.exec()
+    from .media_ui import EnhancedMainWindow
+    app=QApplication(sys.argv); app.setApplicationName("Nepali Song Generator"); app.setOrganizationName("NepaliSongGen"); w=EnhancedMainWindow(); w.show(); return app.exec()
 if __name__=="__main__":raise SystemExit(main())

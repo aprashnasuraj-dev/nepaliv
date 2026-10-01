@@ -7,7 +7,7 @@ root = Path(SPECPATH).parent.parent
 datas = [(str(root / 'models' / 'manifest.json'), 'models')]
 binaries = []
 hiddenimports = ['scripts.fetch_models']
-for pkg in ('piper', 'espeakng_loader', 'onnxruntime', 'imageio_ffmpeg', 'pedalboard', 'soundfile'):
+for pkg in ('piper', 'espeakng_loader', 'onnxruntime', 'imageio_ffmpeg', 'pedalboard', 'soundfile', 'mutagen'):
     try:
         d,b,h = collect_all(pkg)
         datas += d; binaries += b; hiddenimports += h

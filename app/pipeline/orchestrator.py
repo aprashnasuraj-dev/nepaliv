@@ -32,21 +32,28 @@ def render_fingerprint(lyrics: dict, req: dict, voice_id: str) -> str:
     sig = json.dumps({"l": [s["lines"] for s in lyrics["sections"]], "t": [s["type"] for s in lyrics["sections"]],
                       "style": req.get("style"), "voice": voice_id, "seed": req.get("seed"),
                       "h": req.get("harmony", True), "k": req.get("key_shift", 0),
-                      "tempo": req.get("tempo_scale", 1.0), "v": 3}, sort_keys=True, ensure_ascii=False)
+                      "tempo": req.get("tempo_scale", 1.0), "v": 4}, sort_keys=True, ensure_ascii=False)
     return hashlib.sha1(sig.encode()).hexdigest()[:24]
 
 
 def performance_order(lyrics: dict, length: str) -> list[dict]:
-    """Turn written sections into the sung order (chorus repeats)."""
+    """Turn written sections into the sung order.
+
+    Short = first verse + chorus. Full = every verse + chorus, followed by a
+    final chorus repeat. The extra refrain makes the desktop full-song mode
+    behave like an actual finished song rather than a one-pass demo.
+    """
     verses = [s for s in lyrics["sections"] if s["type"] == "verse"]
     chorus = next((s for s in lyrics["sections"] if s["type"] == "chorus"), None)
     order: list[dict] = []
-    for i, v in enumerate(verses or [lyrics["sections"][0]]):
+    for v in verses or [lyrics["sections"][0]]:
         order.append(v)
         if chorus:
             order.append(chorus)
         if length != "full":
             break
+    if length == "full" and chorus and order:
+        order.append(chorus)
     return order
 
 
@@ -57,7 +64,6 @@ def run_song_job(job_id: str, req: dict) -> dict:
         def stage(name: str, pct: float, **extra):
             job_update(job_id, status="running", stage=name, progress=int(pct), **extra)
 
-        # 1. lyrics --------------------------------------------------------
         stage("lyrics", 3)
         lyrics = clean_user_lyrics(req["lyrics"]) if req.get("lyrics") else generate_lyrics(req, req["seed"])
         stage("composing", 20, lyrics=lyrics, title=lyrics.get("title"))
@@ -68,14 +74,12 @@ def run_song_job(job_id: str, req: dict) -> dict:
         if cached:
             return job_update(job_id, status="done", stage="cached", progress=100, lyrics=lyrics, **cached)
 
-        # 2. melody --------------------------------------------------------
         style = get_style(req.get("style", "adhunik"))
         bpm = int(round(style.bpm * float(req.get("tempo_scale", 1.0))))
         composer = MelodyComposer(style, req["seed"], center_midi=voice.center_midi + int(req.get("key_shift", 0)), bpm=bpm)
         score = composer.compose(performance_order(lyrics, req.get("length", "short")))
         stage("singing", 25, karaoke=score.karaoke())
 
-        # 3. voice ---------------------------------------------------------
         singer = Singer(voice, vibrato_cents=style.vibrato_cents, seed=req["seed"])
         vocal = singer.sing(score.vocal, score.total_dur, s.sample_rate,
                             progress=lambda p: stage("singing", 25 + 40 * p))
@@ -84,11 +88,9 @@ def run_song_job(job_id: str, req: dict) -> dict:
             harmony = singer.sing(harmony_notes(score), score.total_dur, s.sample_rate,
                                   progress=lambda p: stage("harmony", 65 + 10 * p))
 
-        # 4. band ----------------------------------------------------------
         stage("band", 76)
         backing = render_backing(score)
 
-        # 5. mix + export --------------------------------------------------
         stage("mixing", 85)
         audio = mix(vocal, backing, harmony, score.bpm, style.reverb_wet)
         tmp = Path(tempfile.mkdtemp(prefix="song_"))
