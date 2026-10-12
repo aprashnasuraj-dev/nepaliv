@@ -17,11 +17,11 @@
 <TextBlock Text="TRADITION ← → MODERNITY" Foreground="#D3A871" Margin="0,12,0,6"/>
 <Slider x:Name="Modernity" Minimum="0" Maximum="100" Value="48" TickFrequency="10"/>
 <Button Content="Explore three takes ↗" Margin="0,22,0,0" Click="Generate_Click"/>
-<TextBlock Text="100% offline: melodic instrument and rhythm synthesis, MIDI, WAV and local projects. No sung vocals or AI-language model bundled." Foreground="#B8C1D0" TextWrapping="Wrap" Margin="0,20,4,0"/>
+<TextBlock Text="100% offline: melodic instrument and rhythm synthesis, MIDI, WAV and local projects. Curated offline lyric drafts; apply edits before saving or rendering. No neural singer bundled." Foreground="#B8C1D0" TextWrapping="Wrap" Margin="0,20,4,0"/>
 </StackPanel>
 <Grid Grid.Column="2"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
 <TextBlock Text="SONG EXPLORER" Foreground="#D3A871" FontSize="14" FontWeight="Bold"/>
-<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,16"><ComboBox x:Name="Takes" Width="230" SelectionChanged="Takes_SelectionChanged"/><Button Content="Save project" Click="Save_Click"/><Button Content="Export MIDI" Click="Midi_Click"/><Button Content="Render WAV" Click="Audio_Click"/><Button Content="Open project" Click="Open_Click"/></StackPanel>
-<TextBox Grid.Row="2" x:Name="Score" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="Wrap" FontSize="16" MinHeight="300"/>
+<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,16"><ComboBox x:Name="Takes" Width="230" SelectionChanged="Takes_SelectionChanged"/><Button Content="Save project" Click="Save_Click"/><Button Content="Export MIDI" Click="Midi_Click"/><Button Content="Render WAV" Click="Audio_Click"/><Button Content="Open project" Click="Open_Click"/><Button Content="Apply lyrics" Click="ApplyLyrics_Click"/></StackPanel>
+<TextBox Grid.Row="2" x:Name="Score" AcceptsReturn="True" IsReadOnly="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="Wrap" FontSize="16" MinHeight="300"/>
 <TextBlock Grid.Row="3" x:Name="Status" Foreground="#B8C1D0" Margin="0,14,0,0" Text="Ready to explore."/>
 </Grid></Grid></Window>

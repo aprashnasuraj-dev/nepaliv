@@ -25,7 +25,7 @@ public partial class MainWindow : Window
             var results = await Task.Run(() => Enumerable.Range(0, 3).Select(i => _generator.Generate(brief, i)).ToArray());
             _takes.Clear(); _takes.AddRange(results); Takes.ItemsSource = null;
             Takes.ItemsSource = _takes.Select(t => t.Title).ToArray(); Takes.SelectedIndex = 0;
-            Status.Text = "Three independent symbolic sketches. Lyrics are editable placeholders, not AI-authored poetry.";
+            Status.Text = "Curated offline lyric drafts; edit lines and click Apply lyrics before export.";
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Generation error", MessageBoxButton.OK, MessageBoxImage.Warning); Status.Text = "Generation failed."; }
     }
@@ -70,6 +70,21 @@ public partial class MainWindow : Window
             Status.Text = "Project loaded.";
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Project loading error"); }
+    }
+    private void ApplyLyrics_Click(object sender, RoutedEventArgs e)
+    {
+        if (Selected is not { } song) return;
+        try
+        {
+            var next = SongScoreEditor.Apply(song, Score.Text);
+            int index = Takes.SelectedIndex;
+            _takes[index] = next;
+            Takes.ItemsSource = null;
+            Takes.ItemsSource = _takes.Select(t => t.Title).ToArray();
+            Takes.SelectedIndex = index;
+            Status.Text = $"Revision {next.Revision} applied. Save to retain it.";
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Lyric editing error"); }
     }
     private void Save_Click(object sender, RoutedEventArgs e)
     {
