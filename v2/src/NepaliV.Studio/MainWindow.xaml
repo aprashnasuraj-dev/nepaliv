@@ -11,7 +11,7 @@
 <TextBlock Text="A memory, a season, a conversation never finished." Foreground="#B8C1D0" TextWrapping="Wrap" Margin="0,0,0,20"/>
 <TextBox x:Name="Intent" AcceptsReturn="True" TextWrapping="Wrap" Height="150" FontSize="17" Text="A song about being far from home during Dashain, hopeful but homesick."/>
 <TextBlock Text="LANGUAGE" Foreground="#D3A871" Margin="0,16,0,0"/>
-<ComboBox x:Name="Language"><ComboBoxItem Content="नेपाली · Nepali" IsSelected="True"/><ComboBoxItem Content="हिन्दी · Hindi"/></ComboBox>
+<ComboBox x:Name="SongLanguagePicker"><ComboBoxItem Content="नेपाली · Nepali" IsSelected="True"/><ComboBoxItem Content="हिन्दी · Hindi"/></ComboBox>
 <TextBlock Text="CREATIVE TRADITION" Foreground="#D3A871" Margin="0,8,0,0"/>
 <ComboBox x:Name="Tradition"><ComboBoxItem Content="Adhunik" IsSelected="True"/><ComboBoxItem Content="Lok / Folk"/><ComboBoxItem Content="Dohori"/><ComboBoxItem Content="Indie Pop"/><ComboBoxItem Content="Bollywood"/><ComboBoxItem Content="Classical Fusion"/></ComboBox>
 <TextBlock Text="TRADITION ← → MODERNITY" Foreground="#D3A871" Margin="0,12,0,6"/>

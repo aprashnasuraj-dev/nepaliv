@@ -18,7 +18,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            var brief = new CreativeBrief(Intent.Text.Trim(), Language.SelectedIndex == 1 ? SongLanguage.Hindi : SongLanguage.Nepali,
+            var brief = new CreativeBrief(Intent.Text.Trim(), SongLanguagePicker.SelectedIndex == 1 ? SongLanguage.Hindi : SongLanguage.Nepali,
                 (Tradition.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Adhunik", (int)Modernity.Value, Environment.TickCount);
             Status.Text = "Composing local symbolic sketches…";
             var results = await Task.Run(() => Enumerable.Range(0, 3).Select(i => _generator.Generate(brief, i)).ToArray());
