@@ -17,6 +17,13 @@ try
         var takes = Enumerable.Range(0, 3).Select(i => composer.Generate(brief, i)).ToArray();
         if (takes.Select(t => t.Sections[3].Melody[0].Pitch).Distinct().Count() != 3) throw new Exception("Take variation missing.");
         var song = takes[0];
+        if (song.Sections.Any(s => s.Lines.Any(l => l.Contains("यहाँ") || l.Contains("【"))))
+            throw new Exception("Unfilled lyric scaffold.");
+        string serializedView = string.Join("\n", song.Sections.Select(s => "── " + s.Role + " ──\n" +
+            string.Join("  ·  ", s.Chords) + "\n" + string.Join("\n", s.Lines)));
+        var revised = SongScoreEditor.Apply(song, serializedView);
+        if (revised.Revision != song.Revision + 1 ||
+            revised.Sections.Any(s => s.Lines.Length == 0)) throw new Exception("Section edit failed.");
         string json = JsonSerializer.Serialize(song);
         if (JsonSerializer.Deserialize<SongDocument>(json)?.Sections.Length != 8) throw new Exception("JSON roundtrip failed.");
         string midi = Path.Combine(root, language + ".mid");
