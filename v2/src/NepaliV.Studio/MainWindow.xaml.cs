@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using NepaliV.Studio.Domain;
 using NepaliV.Studio.Generation;
 using NepaliV.Studio.Export;
+using NepaliV.Studio.Audio;
 
 namespace NepaliV.Studio;
 public partial class MainWindow : Window
@@ -42,6 +43,33 @@ public partial class MainWindow : Window
             foreach (string line in part.Lines) sb.AppendLine(line);
         }
         Score.Text = sb.ToString();
+    }
+    private async void Audio_Click(object sender, RoutedEventArgs e)
+    {
+        if (Selected is not { } song) { Status.Text = "Generate a sketch first."; return; }
+        var dialog = new SaveFileDialog { Filter = "Waveform Audio (*.wav)|*.wav", FileName = "NepaliV-arrangement.wav" };
+        if (dialog.ShowDialog() != true) return;
+        try
+        {
+            Status.Text = "Rendering entirely offline…";
+            await Task.Run(() => OfflineAudioRenderer.Render(song, dialog.FileName));
+            Status.Text = "Offline WAV created (instrumental guide, not sung vocals).";
+        }
+        catch (Exception ex) { Status.Text = "Render failed."; MessageBox.Show(this, ex.Message, "Audio rendering error"); }
+    }
+    private void Open_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Filter = "NepaliV project (*.json)|*.json" };
+        if (dialog.ShowDialog() != true) return;
+        try
+        {
+            var document = JsonSerializer.Deserialize<SongDocument>(File.ReadAllText(dialog.FileName, Encoding.UTF8));
+            if (document is null || document.Sections is null || document.Sections.Length == 0) throw new InvalidDataException("Invalid song document.");
+            _takes.Clear(); _takes.Add(document); Takes.ItemsSource = null;
+            Takes.ItemsSource = _takes.Select(t => t.Title).ToArray(); Takes.SelectedIndex = 0;
+            Status.Text = "Project loaded.";
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Project loading error"); }
     }
     private void Save_Click(object sender, RoutedEventArgs e)
     {
