@@ -1,3 +1,5 @@
+> **V2 rebuild is under development:** [NepaliV Song Atelier](v2/README.md) is a new WPF source foundation with structured symbolic sketches and MIDI output. This is **not** a finished AI singer. See [v1 post-mortem](docs/V1_POSTMORTEM_V2_GATE.md).
+
 # 🎵 Nepali Song Generator (CPU-only, no paid APIs)
 
 Prompt → Nepali lyrics (Devanagari) → melody → sung vocals → Nepali-style band → MP3/WAV/MP4, with syllable-level karaoke timings. The same core pipeline serves FastAPI and the Windows PySide6 studio.

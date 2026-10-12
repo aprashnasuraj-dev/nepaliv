@@ -1,0 +1,29 @@
+name: V2 Windows foundation verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'v2/**'
+      - '.github/workflows/v2-windows.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile WPF in Release
+        run: dotnet build v2/src/NepaliV.Studio/NepaliV.Studio.csproj -c Release --warnaserror
+      - name: Publish self-contained Windows x64
+        run: dotnet publish v2/src/NepaliV.Studio/NepaliV.Studio.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o v2/publish
+      - name: Upload preview binaries (not a validated release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NepaliV-v2-foundation-win-x64
+          path: v2/publish/
+          if-no-files-found: error
