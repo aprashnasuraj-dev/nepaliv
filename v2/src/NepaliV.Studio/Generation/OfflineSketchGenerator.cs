@@ -21,9 +21,7 @@ public sealed class OfflineSketchGenerator
         };
         var sections = Roles.Select((role, index) =>
         {
-            string[] lines = role is "Intro" or "Outro"
-                ? [brief.Language == SongLanguage.Nepali ? "वाद्य प्रस्तावना — भावना खुल्दै" : "वाद्य प्रस्तावना — एहसास उभरता है"]
-                : MakeLines(brief, role, take);
+            string[] lines = OfflineLyricWriter.Compose(brief, role, take);
             int[] motif = index is 3 or 6 ? [0, 4, 7, 5, 4, 2, 0, 2] : [0, 2, 4, 2, 5, 4, 2, 0];
             int pitchBase = 60 + (take % 3) * 2;
             NoteEvent[] notes = Enumerable.Range(0, 16)
