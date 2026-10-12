@@ -19,6 +19,8 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Compile WPF in Release
         run: dotnet build v2/src/NepaliV.Studio/NepaliV.Studio.csproj -c Release --warnaserror
+      - name: Offline composition and audio file smoke test
+        run: dotnet run --project v2/tests/NepaliV.Smoke/NepaliV.Smoke.csproj -c Release
       - name: Publish self-contained Windows x64
         run: dotnet publish v2/src/NepaliV.Studio/NepaliV.Studio.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o v2/publish
       - name: Upload preview binaries (not a validated release)

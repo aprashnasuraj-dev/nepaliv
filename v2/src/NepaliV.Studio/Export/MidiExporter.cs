@@ -19,12 +19,13 @@ public static class MidiExporter
             tempo.Write([0, 0xff, 0x51, 0x03, (byte)(micros >> 16), (byte)(micros >> 8), (byte)micros, 0, 0xff, 0x2f, 0]);
             Track(output, tempo.ToArray());
         }
+        int sectionOffset = 0;
         foreach (SongSection section in song.Sections)
         {
             using var tr = new MemoryStream();
             var name = Encoding.UTF8.GetBytes(section.Role);
             tr.WriteByte(0); tr.WriteByte(0xff); tr.WriteByte(0x03); Var(tr, name.Length); tr.Write(name);
-            var events = section.Melody.SelectMany(n => new[] { (tick: n.StartTick, on: true, pitch: n.Pitch), (tick: checked(n.StartTick + n.DurationTicks), on: false, pitch: n.Pitch) })
+            var events = section.Melody.SelectMany(n => new[] { (tick: checked(sectionOffset + n.StartTick), on: true, pitch: n.Pitch), (tick: checked(sectionOffset + n.StartTick + n.DurationTicks), on: false, pitch: n.Pitch) })
                 .OrderBy(x => x.tick).ThenBy(x => x.on).ToArray();
             int previous = 0;
             foreach (var e in events)
@@ -35,6 +36,8 @@ public static class MidiExporter
                 previous = e.tick;
             }
             tr.Write([0, 0xff, 0x2f, 0]); Track(output, tr.ToArray());
+            int notesEnd = section.Melody.Length == 0 ? 0 : section.Melody.Max(n => checked(n.StartTick + n.DurationTicks));
+            sectionOffset = checked(sectionOffset + Math.Max(notesEnd, section.Chords.Length * song.TicksPerBeat * 4));
         }
     }
     private static void Track(Stream s, byte[] bytes) { s.Write("MTrk"u8); Be32(s, bytes.Length); s.Write(bytes); }
