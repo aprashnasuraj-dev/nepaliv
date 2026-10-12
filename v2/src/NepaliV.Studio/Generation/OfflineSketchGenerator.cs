@@ -13,7 +13,7 @@ public sealed class OfflineSketchGenerator
         if (brief.Modernity is < 0 or > 100) throw new ArgumentOutOfRangeException(nameof(brief.Modernity));
         var rng = new Random(HashCodeStable(brief.Intent, brief.Seed, take));
         int bpm = Math.Clamp(68 + brief.Modernity / 4 + rng.Next(-6, 7), 55, 145);
-        string[] progression = take % 3 switch
+        string[] progression = (take % 3) switch
         {
             0 => ["Am", "F", "C", "G"],
             1 => ["Dm", "G", "C", "Am"],
