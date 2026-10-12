@@ -1,4 +1,5 @@
 using System.IO;
+using System.Windows.Media;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -14,6 +15,10 @@ public partial class MainWindow : Window
 {
     private readonly OfflineSketchGenerator _generator = new();
     private readonly List<SongDocument> _takes = [];
+    private readonly MediaPlayer _player = new();
+    private readonly string _previewPath = Path.Combine(Path.GetTempPath(), "NepaliV-" + Guid.NewGuid().ToString("N") + ".wav");
+    private bool _rendering;
+
     public MainWindow() => InitializeComponent();
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
@@ -23,6 +28,7 @@ public partial class MainWindow : Window
                 (Tradition.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Adhunik", (int)Modernity.Value, Environment.TickCount);
             Status.Text = "Composing local symbolic sketches…";
             var results = await Task.Run(() => Enumerable.Range(0, 3).Select(i => _generator.Generate(brief, i)).ToArray());
+            _player.Stop(); _player.Close();
             _takes.Clear(); _takes.AddRange(results); Takes.ItemsSource = null;
             Takes.ItemsSource = _takes.Select(t => t.Title).ToArray(); Takes.SelectedIndex = 0;
             Status.Text = "Curated offline lyric drafts; edit lines and click Apply lyrics before export.";
@@ -43,6 +49,33 @@ public partial class MainWindow : Window
             foreach (string line in part.Lines) sb.AppendLine(line);
         }
         Score.Text = sb.ToString();
+    }
+    private async void Play_Click(object sender, RoutedEventArgs e)
+    {
+        if (_rendering || Selected is not { } song) return;
+        try
+        {
+            _rendering = true;
+            _player.Stop(); _player.Close();
+            Status.Text = "Synthesizing local instrumental preview…";
+            await Task.Run(() => OfflineAudioRenderer.Render(song, _previewPath));
+            _player.Open(new Uri(_previewPath, UriKind.Absolute));
+            _player.Play();
+            Status.Text = "Playing offline instrumental preview. No singer model is installed.";
+        }
+        catch (Exception ex) { Status.Text = "Playback error: " + ex.Message; }
+        finally { _rendering = false; }
+    }
+    private void Stop_Click(object sender, RoutedEventArgs e)
+    {
+        _player.Stop();
+        Status.Text = "Playback stopped.";
+    }
+    protected override void OnClosed(EventArgs e)
+    {
+        _player.Stop(); _player.Close();
+        try { if (File.Exists(_previewPath)) File.Delete(_previewPath); } catch (IOException) { }
+        base.OnClosed(e);
     }
     private async void Audio_Click(object sender, RoutedEventArgs e)
     {
