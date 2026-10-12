@@ -1,0 +1,27 @@
+<Window x:Class="NepaliV.Studio.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="NepaliV · Song Atelier" Width="1200" Height="800" MinWidth="840" MinHeight="620" Background="#10131D" Foreground="#F5F1EA" FontFamily="Nirmala UI">
+<Window.Resources>
+<Style TargetType="Button"><Setter Property="Background" Value="#D3A871"/><Setter Property="Foreground" Value="#141720"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Padding" Value="18,10"/><Setter Property="Margin" Value="0,0,10,0"/></Style>
+<Style TargetType="TextBox"><Setter Property="Background" Value="#242A39"/><Setter Property="Foreground" Value="#FFF9F0"/><Setter Property="BorderBrush" Value="#566078"/><Setter Property="Padding" Value="12"/></Style>
+<Style TargetType="ComboBox"><Setter Property="Margin" Value="0,6,12,12"/><Setter Property="MinWidth" Value="140"/></Style>
+</Window.Resources>
+<Grid Margin="28"><Grid.ColumnDefinitions><ColumnDefinition Width="380"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+<StackPanel Grid.Column="0">
+<TextBlock Text="NEPALIV / ATELIER" Foreground="#D3A871" FontWeight="Bold" FontSize="15" Margin="0,0,0,14"/>
+<TextBlock Text="Start with a feeling." FontSize="34" FontWeight="Light" TextWrapping="Wrap" Margin="0,0,0,16"/>
+<TextBlock Text="A memory, a season, a conversation never finished." Foreground="#B8C1D0" TextWrapping="Wrap" Margin="0,0,0,20"/>
+<TextBox x:Name="Intent" AcceptsReturn="True" TextWrapping="Wrap" Height="150" FontSize="17" Text="A song about being far from home during Dashain, hopeful but homesick."/>
+<TextBlock Text="LANGUAGE" Foreground="#D3A871" Margin="0,16,0,0"/>
+<ComboBox x:Name="Language"><ComboBoxItem Content="नेपाली · Nepali" IsSelected="True"/><ComboBoxItem Content="हिन्दी · Hindi"/></ComboBox>
+<TextBlock Text="CREATIVE TRADITION" Foreground="#D3A871" Margin="0,8,0,0"/>
+<ComboBox x:Name="Tradition"><ComboBoxItem Content="Adhunik" IsSelected="True"/><ComboBoxItem Content="Lok / Folk"/><ComboBoxItem Content="Dohori"/><ComboBoxItem Content="Indie Pop"/><ComboBoxItem Content="Bollywood"/><ComboBoxItem Content="Classical Fusion"/></ComboBox>
+<TextBlock Text="TRADITION ← → MODERNITY" Foreground="#D3A871" Margin="0,12,0,6"/>
+<Slider x:Name="Modernity" Minimum="0" Maximum="100" Value="48" TickFrequency="10"/>
+<Button Content="Explore three takes ↗" Margin="0,22,0,0" Click="Generate_Click"/>
+<TextBlock Text="Offline sketch mode · editable song structure and MIDI. AI songwriting / synthesized singing are not yet installed." Foreground="#B8C1D0" TextWrapping="Wrap" Margin="0,20,4,0"/>
+</StackPanel>
+<Grid Grid.Column="2"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<TextBlock Text="SONG EXPLORER" Foreground="#D3A871" FontSize="14" FontWeight="Bold"/>
+<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,16"><ComboBox x:Name="Takes" Width="230" SelectionChanged="Takes_SelectionChanged"/><Button Content="Save project" Click="Save_Click"/><Button Content="Export MIDI" Click="Midi_Click"/></StackPanel>
+<TextBox Grid.Row="2" x:Name="Score" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="Wrap" FontSize="16" MinHeight="300"/>
+<TextBlock Grid.Row="3" x:Name="Status" Foreground="#B8C1D0" Margin="0,14,0,0" Text="Ready to explore."/>
+</Grid></Grid></Window>
